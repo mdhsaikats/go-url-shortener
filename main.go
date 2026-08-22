@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,8 +8,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
-	"main.go/app/config"
+	database "main.go/app/config"
 	"main.go/app/routes"
 )
 
@@ -18,23 +18,26 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
-	dsn := os.Getenv("DB_URL")
-	if dsn == "" {
-		log.Fatal("DB_URL environment variable is not set")
-	}
-	ctx := context.Background()
-	pool, err := config.InitPool(ctx, dsn)
+	err := database.DatabaseConnection()
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		log.Fatalf("Database initialization failed: %v", err)
 	}
-	defer pool.Close()
-	log.Println("Database connection pool initialized successfully!")
+
+	defer database.DB.Close()
 	port := os.Getenv("PORT")
 	if port == ""{
 		port = "3000"
 	}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(cors.Handler(cors.Options{
+    AllowedOrigins:   []string{"*"}, // or "http://localhost:3000"
+    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+    AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+    ExposedHeaders:   []string{"Link"},
+    AllowCredentials: true,
+    MaxAge:           300,
+}))
 	routes.ApiRouters(r)
 
 	fmt.Printf("Running on port: %s\n", port)

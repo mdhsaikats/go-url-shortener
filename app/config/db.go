@@ -2,31 +2,51 @@ package config
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"log"
+	"os"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
 )
 
-func InitPool(ctx context.Context,dsn string)(*pgxpool.Pool,error) {
-	config, err := pgxpool.ParseConfig(dsn)
+var DB *sql.DB
+
+func DatabaseConnection() error {
+	_ = godotenv.Load()
+
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+
+	connStr := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		user, password, host, port, dbname,
+	)
+
+	var err error
+	DB, err = sql.Open("pgx", connStr)
 	if err != nil {
-		return nil, fmt.Errorf("Parse config failed: %w",err)
+		return fmt.Errorf("error opening database: %w", err)
 	}
 
-	config.MaxConns = 25
-	config.MinConns = 5
-	config.MaxConnLifetime = 30 * time.Minute
-	config.MaxConnIdleTime = 15* time.Minute
+	DB.SetMaxOpenConns(25)
+	DB.SetMaxIdleConns(25)
+	DB.SetConnMaxLifetime(5 * time.Minute)
+	DB.SetConnMaxIdleTime(10 * time.Minute)
 
-	pool,err := pgxpool.NewWithConfig(ctx,config)
-	if err != nil {
-		return nil, fmt.Errorf("create pool failed: %w",err)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := DB.PingContext(ctx); err != nil {
+		DB.Close()
+		return fmt.Errorf("error connecting to the database: %w", err)
 	}
 
-	if err := pool.Ping(ctx); err != nil{
-		pool.Close()
-		return nil, fmt.Errorf("Ping failed: w%",err)
-	}
-	return pool,nil
+	log.Println("Successfully connected to PostgreSQL...")
+	return nil
 }

@@ -1,0 +1,93 @@
+{
+  "info": {
+    "_postman_id": "92cdb874-2b1d-451c-a20d-2f59211a3439",
+    "name": "url-shortner-api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "46045911",
+    "_collection_link": "https://go.postman.co/collection/46045911-92cdb874-2b1d-451c-a20d-2f59211a3439?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "ServerHealth",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GenerateShortCode",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"original_url\": \"https://www.youtube.com/watch?v=kPtn26x8TZM&list=RDtucWbkH5WX0&index=4\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/url",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "url"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "RedirectURL",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/RagNhVoSfN",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "RagNhVoSfN"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
